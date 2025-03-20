@@ -1,24 +1,14 @@
-import argparse
-import subprocess
-import gc
+import argparse, time, re, os, subprocess 
+import gc # Garbage Collector
 import torch
-import os
 from faster_whisper import WhisperModel
-import time
-import re
 
-FOLDER = r'C:\03 My learning\01 Masteres\24-10 to 26-01 - BME - AI financiera\01 Grb Clases\1 Cortes GPT'
-FOLDER = r'C:\03 My learning\01 Masteres\24-10 to 26-01 - BME - AI financiera\01 Grb Clases'
-FOLDER_AUDIO = r'C:\03 My learning\01 Masteres\24-10 to 26-01 - BME - AI financiera\01 Grb Clases\3 Audio'
-DESTINY_FOLDER_PRUEBA = r'C:\03 My learning\01 Masteres\24-10 to 26-01 - BME - AI financiera\01 Grb Clases\2 Transcrip\Prueba'
-DESTINY_FOLDER = r'C:\03 My learning\01 Masteres\24-10 to 26-01 - BME - AI financiera\01 Grb Clases\2 Transcrip'
-ARCHIVO_PRUEBA = r'C:\03 My learning\01 Masteres\24-10 to 26-01 - BME - AI financiera\01 Grb Clases\24-10-04 -4 Visual Basic para finanzas Sesion II Guille.mp4'
-ARCHIVO_PRUEBA = r'C:\03 My learning\01 Masteres\24-10 to 26-01 - BME - AI financiera\01 Grb Clases\24-10-04 - Visual Basic para finanzas Sesion II Guille.mp4'
-
+# Costants
 FOLDER = r'.'
 DESTINY_FOLDER = r'.\transcript'
+FOLDER_AUDIO = r'.\audio'
 
-
+# Timing decorator
 def execution_time_decorator(func):
     def wrapper(*args, **kwargs):
         start_time = time.time()
@@ -30,7 +20,7 @@ def execution_time_decorator(func):
         return result
     return wrapper
 
-
+# Tried converting to audio first but not more eficient
 def video2audio(file_path, destiny_folder, print_output=False):
     # Convertir el video a audio
     audio_file = os.path.join(destiny_folder, f"{os.path.splitext(os.path.basename(file_path))[0]}.wav")
@@ -59,8 +49,8 @@ def video2audio(file_path, destiny_folder, print_output=False):
         print(f"❌ Error en FFmpeg: {e}")
     return audio_file
 
-
-def transcribe_audio(file_path, model, model_size: str = "large-v2", device: str = "cuda", beam_size: int = 3, print_output: bool = False) -> str:
+# Transcribir
+def transcribe_audio(file_path, model, beam_size: int = 3, print_output: bool = False) -> str:
     
     # Cargar el modelo WhisperModel "large"
     
@@ -85,6 +75,7 @@ def transcribe_audio(file_path, model, model_size: str = "large-v2", device: str
 
 # @execution_time_decorator
 def conversion_completa(file_path, destiny_folder, audio_destiny_folder, model, model_size: str = "large-v2", device: str = "cuda", beam_size: int = 2, print_output: bool = False, Bvideo2audio: bool = True) -> str:
+    # Pre-conversion
     if Bvideo2audio:
         audio_file = video2audio(file_path, audio_destiny_folder, print_output = print_output)
     else:
@@ -96,9 +87,7 @@ def conversion_completa(file_path, destiny_folder, audio_destiny_folder, model, 
 
     output_file = os.path.join(destiny_folder, f"{file_name}.txt")
     
-    # print(f"Destination folder: {destiny_folder}")
-    # print(f" {os.path.splitext(file_path)[0]}.txt")
-    # print(f"Output file: {output_file}")
+    # Writing the transcription to a file
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(resultado)
 
@@ -109,11 +98,6 @@ def conversion_completa(file_path, destiny_folder, audio_destiny_folder, model, 
     if torch.cuda.is_available():
         torch.cuda.empty_cache()  
         print("Memoria de la GPU liberada.")
-    
-    return 'OK'
-
-
-## Ejemplo: & C:/Users/pablo/anaconda3/envs/MIAX/python.exe "c:/03 My learning/01 Masteres/24-10 to 26-01 - BME - AI financiera/01 Grb Clases/0 Script/Split.py" --regex  "24-11-15 .*"
 
 if __name__ == "__main__":
 
@@ -145,35 +129,4 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"Error en el archivo {filename}: {e}")
     
-
-
-    # Main Loop
-    # for filename in os.listdir(FOLDER):
-    #     try:    
-    #         if filename.endswith(('.mp4', '.avi', '.mkv', '.mov')) and re.match(regex, filename):
-    #             # print(os.path.join(FOLDER, filename), os.path.join(DESTINY_FOLDER, f"{os.path.splitext(filename)[0]}.txt"))     
-    #             file_path = os.path.join(FOLDER, filename)
-    #             output_file = os.path.join(DESTINY_FOLDER, f"{os.path.splitext(filename)[0]}.txt")
-                
-    #             if os.path.exists(output_file):
-    #                 print(f"El archivo {output_file} ya existe. Saltando transcripción.")
-                    
-    #             else:
-    #                 # Convertir el video a audio
-    #                 audio_file = video2audio(file_path, FOLDER_AUDIO)
-
-    #                 # Guardar la transcripción en un archivo de texto
-    #                 resultado = transcribe_audio(audio_file, model)
-    #                 with open(output_file, "w", encoding="utf-8") as f:
-    #                     f.write(resultado)
-
-    #                 del resultado  # Eliminar la variable de la memoria
-    #                 gc.collect()  # Limpiar la memoria
-    #                 if torch.cuda.is_available():
-    #                     torch.cuda.empty_cache()  
-    #                     print("Memoria de la GPU liberada.")
-    #                 time.sleep(4)
-    #     except Exception as e:
-    #         print(f"Error en el archivo {filename}: {e}")
-
-    
+    print("Proceso terminado. 😊")
