@@ -75,6 +75,8 @@ if __name__ == "__main__":
                     print(f"El archivo {output_file} ya existe. Saltando transcripción.")
                     
                 else:
+                    
+                    os.makedirs(DESTINY_FOLDER, exist_ok=True)
 
                     conversion_completa(file_path, DESTINY_FOLDER, model, print_output=True)
                     
